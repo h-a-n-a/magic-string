@@ -24,6 +24,7 @@ export default class Mappings {
 	}
 
 	addUneditedChunk(sourceIndex, chunk, original, loc, sourcemapLocations) {
+		// 基于原字符串 index 生成 sourcemap
 		let originalCharIndex = chunk.start;
 		let first = true;
 
@@ -33,13 +34,18 @@ export default class Mappings {
 			}
 
 			if (original[originalCharIndex] === '\n') {
+				// 新增一行
 				loc.line += 1;
+				// 列从 0 开始
 				loc.column = 0;
+				// 新增一行
 				this.generatedCodeLine += 1;
+				// 为新增的行创建新的 bitmap 如： [0,1,1,1]，最后经过 vlq 转化为英文
 				this.raw[this.generatedCodeLine] = this.rawSegments = [];
 				this.generatedCodeColumn = 0;
 				first = true;
 			} else {
+				// 原字符串行信息 + 1，生成组成热的行信息也 + 1
 				loc.column += 1;
 				this.generatedCodeColumn += 1;
 				first = false;

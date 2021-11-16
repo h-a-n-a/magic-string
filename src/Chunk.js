@@ -1,4 +1,5 @@
 export default class Chunk {
+	// start end 均为以 MagicString 入参 `string` 为参照的 index
 	constructor(start, end, content) {
 		this.start = start;
 		this.end = end;
@@ -80,11 +81,14 @@ export default class Chunk {
 	}
 
 	split(index) {
+		// 当前 chunk 的开始位置
 		const sliceIndex = index - this.start;
 
+		// 当前 chunk 的这一段 original 的拆分，before 为 sliceIndex 之前的部分，after 为 sliceIndex 之后的部分
 		const originalBefore = this.original.slice(0, sliceIndex);
 		const originalAfter = this.original.slice(sliceIndex);
 
+		// 复用当前 chunk，将 originalBefore 作为当前 chunk 的内容，并将 originalAfter 作为下一个新的 chunk 的内容
 		this.original = originalBefore;
 
 		const newChunk = new Chunk(index, this.end, originalAfter);
@@ -93,6 +97,7 @@ export default class Chunk {
 
 		this.end = index;
 
+		// 当前 chunk 曾经被编辑过，则将新 chunk 的 content 设置为空字符串
 		if (this.edited) {
 			// TODO is this block necessary?...
 			newChunk.edit('', false);
@@ -101,11 +106,14 @@ export default class Chunk {
 			this.content = originalBefore;
 		}
 
+		// 链表操作： 当前 chunk 与当前 chunk 的下一个 chunk 之间插入新 chunk
 		newChunk.next = this.next;
+		// 双向链表
 		if (newChunk.next) newChunk.next.previous = newChunk;
 		newChunk.previous = this;
 		this.next = newChunk;
 
+		// 返回新的 chunk（后一个）
 		return newChunk;
 	}
 

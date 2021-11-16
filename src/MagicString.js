@@ -18,11 +18,14 @@ const warned = {
 
 export default class MagicString {
 	constructor(string, options = {}) {
+		// start, end 左闭右开
 		const chunk = new Chunk(0, string.length, string);
 
 		Object.defineProperties(this, {
 			original:              { writable: true, value: string },
+			// 结尾 
 			outro:                 { writable: true, value: '' },
+			// 开头
 			intro:                 { writable: true, value: '' },
 			firstChunk:            { writable: true, value: chunk },
 			lastChunk:             { writable: true, value: chunk },
@@ -55,6 +58,7 @@ export default class MagicString {
 		return this;
 	}
 
+	// Left 与 Right 指代的是 index 的左右 Chunk
 	appendLeft(index, content) {
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
@@ -62,6 +66,7 @@ export default class MagicString {
 
 		this._split(index);
 
+		// 选择分割后的前一个 chunk
 		const chunk = this.byEnd[index];
 
 		if (chunk) {
@@ -81,6 +86,7 @@ export default class MagicString {
 
 		this._split(index);
 
+		// 选择分割后的后一个 chunk
 		const chunk = this.byStart[index];
 
 		if (chunk) {
@@ -133,10 +139,12 @@ export default class MagicString {
 	generateDecodedMap(options) {
 		options = options || {};
 
+		// 单个 source 文件，写死 sourceIndex 为 0（mapping.raw 的第二个参数）
 		const sourceIndex = 0;
 		const names = Object.keys(this.storedNames);
 		const mappings = new Mappings(options.hires);
 
+		// 找到 source 的行列信息，以遍之后生成 sourcemap
 		const locate = getLocator(this.original);
 
 		if (this.intro) {
@@ -144,6 +152,7 @@ export default class MagicString {
 		}
 
 		this.firstChunk.eachNext(chunk => {
+			// chunk.start 的行列信息，即为 chunk 开始的初始坐标信息
 			const loc = locate(chunk.start);
 
 			if (chunk.intro.length) mappings.advance(chunk.intro);
@@ -153,6 +162,7 @@ export default class MagicString {
 					sourceIndex,
 					chunk.content,
 					loc,
+					// 变量
 					chunk.storeName ? names.indexOf(chunk.original) : -1
 				);
 			} else {
@@ -339,7 +349,9 @@ export default class MagicString {
 
 		if (DEBUG) this.stats.time('overwrite');
 
+		// [chunk:0] -----> [chunk:0] -> [chunk: 1]
 		this._split(start);
+		// [chunk:0] -> [chunk: 1] -----> [chunk:0] -> [chunk: 1] -> [chunk: 2]
 		this._split(end);
 
 		if (options === true) {
@@ -581,6 +593,7 @@ export default class MagicString {
 		const searchForward = index > chunk.end;
 
 		while (chunk) {
+			// 以 index 为区分，将 chunk 一拆为二
 			if (chunk.contains(index)) return this._splitChunk(chunk, index);
 
 			chunk = searchForward ? this.byStart[chunk.end] : this.byEnd[chunk.start];
@@ -598,8 +611,10 @@ export default class MagicString {
 			);
 		}
 
+		// 前一个 chunk: [chunk.start, index), 新的 chunk: [index, newChunk.end]
 		const newChunk = chunk.split(index);
 
+		// 坐标存入全局 hashmap
 		this.byEnd[index] = chunk;
 		this.byStart[index] = newChunk;
 		this.byEnd[newChunk.end] = newChunk;
