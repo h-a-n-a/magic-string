@@ -18,10 +18,12 @@ export default class Chunk {
 		});
 	}
 
+	// 这里的名字容易让人误解，需要看 MagicString 对于 appendLeft 的实现
 	appendLeft(content) {
 		this.outro += content;
 	}
 
+	// 同上
 	appendRight(content) {
 		this.intro = this.intro + content;
 	}

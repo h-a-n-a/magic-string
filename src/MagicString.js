@@ -18,6 +18,7 @@ const warned = {
 
 export default class MagicString {
 	constructor(string, options = {}) {
+		// 左闭，右开
 		const chunk = new Chunk(0, string.length, string);
 
 		Object.defineProperties(this, {
@@ -55,18 +56,23 @@ export default class MagicString {
 		return this;
 	}
 
+	// 插入左边的 chunk
 	appendLeft(index, content) {
 		if (typeof content !== 'string') throw new TypeError('inserted content must be a string');
 
 		if (DEBUG) this.stats.time('appendLeft');
 
+		// 从 index 处对当前 chunk 进行切片
 		this._split(index);
 
+		// 拿到以这个 index 结尾的 chunk
 		const chunk = this.byEnd[index];
 
 		if (chunk) {
+			// 插到以这个 index 结尾的 chunk 的结尾
 			chunk.appendLeft(content);
 		} else {
+			// 否则插入当前 chunk 的开头
 			this.intro += content;
 		}
 
