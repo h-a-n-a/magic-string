@@ -42,11 +42,17 @@ describe('MagicString', () => {
 			const s = new MagicString('0123456789');
 
 			s.appendLeft(5, 'A');
+			console.log(1,s.toString());
 			s.prependRight(5, 'a');
+			console.log(2,s.toString());
 			s.prependRight(5, 'b');
+			console.log(3,s.toString());
 			s.appendLeft(5, 'B');
+			console.log(4,s.toString());
 			s.appendLeft(5, 'C');
+			console.log(5,s.toString());
 			s.prependRight(5, 'c');
+			console.log(6,s.toString());
 
 			assert.equal(s.toString(), '01234ABCcba56789');
 			assert.equal(s.slice(0, 5), '01234ABC');

@@ -64,14 +64,17 @@ export default class MagicString {
 
 		if (DEBUG) this.stats.time('appendLeft');
 
+		// 从 index 处对当前 chunk 进行切片
 		this._split(index);
 
 		// 选择分割后的前一个 chunk
 		const chunk = this.byEnd[index];
 
 		if (chunk) {
+			// 插到以这个 index 结尾的 chunk 的结尾
 			chunk.appendLeft(content);
 		} else {
+			// 否则插入当前 chunk 的开头
 			this.intro += content;
 		}
 
